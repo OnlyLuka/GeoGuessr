@@ -21,7 +21,8 @@ const translations = {
         miles: "Miles",
         km: "km",
         english: "English",
-        french: "Français"
+        french: "Français",
+        error_loading: "Sorry, no valid Mapillary image found. Try refreshing the page."
     },
     fr: {
         title: "TerraSpot Projet!",
@@ -34,27 +35,51 @@ const translations = {
         miles: "Miles",
         km: "km",
         english: "English",
-        french: "Français"
+        french: "Français",
+        error_loading: "Désolé, aucune image Mapillary valide trouvée. Essayez de rafraîchir la page."
     }
 };
 
+// Liste d'IDs Mapillary récentes et diverses (remplace/rajoute selon tes préférences)
 const MAPILLARY_IMAGES = [
-    "524494585692477", "1265455672054374", "664790282220317", "1184842093228185"
+    "524494585692477", "1265455672054374", "664790282220317", "1184842093228185",
+    "344192905821863", "371442130381501", "140045350856823", "521293819675676",
+    "523859244661685", "950852261757949", "448530414412853", "633973306717230"
 ];
 
-function getRandomMapillaryImage() {
-    return MAPILLARY_IMAGES[Math.floor(Math.random() * MAPILLARY_IMAGES.length)];
+// Utilitaire pour piocher un ID au hasard
+function getRandomMapillaryImage(tried = []) {
+    if (tried.length >= MAPILLARY_IMAGES.length) return null;
+    let idx;
+    do {
+        idx = Math.floor(Math.random() * MAPILLARY_IMAGES.length);
+    } while (tried.includes(MAPILLARY_IMAGES[idx]));
+    return MAPILLARY_IMAGES[idx];
 }
+
+// Essaie en boucle jusqu'à trouver une image avec coordonnées valides ou tout épuisé
 async function getRandomValidLocation() {
-    const imageId = getRandomMapillaryImage();
-    const response = await fetch(`https://graph.mapillary.com/${imageId}?fields=id,computed_geometry&access_token=${MAPILLARY_CLIENT_TOKEN}`);
-    const data = await response.json();
-    const coords = data.computed_geometry.coordinates;
-    return {
-        lat: coords[1],
-        lng: coords[0],
-        imageId: imageId
-    };
+    let tried = [];
+    while (tried.length < MAPILLARY_IMAGES.length) {
+        const imageId = getRandomMapillaryImage(tried);
+        tried.push(imageId);
+        const url = `https://graph.mapillary.com/${imageId}?fields=id,computed_geometry&access_token=${MAPILLARY_CLIENT_TOKEN}`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.computed_geometry && data.computed_geometry.coordinates) {
+                const coords = data.computed_geometry.coordinates;
+                return {
+                    lat: coords[1],
+                    lng: coords[0],
+                    imageId: imageId
+                };
+            }
+        } catch (e) {
+            // continue
+        }
+    }
+    return null; // rien trouvé
 }
 
 async function initialize() {
@@ -66,8 +91,14 @@ async function initialize() {
     }
     document.getElementById("location").innerHTML = ' ';
     document.getElementById("distance").innerHTML = ' ';
+    document.getElementById("result").innerHTML = ''; // reset erreur éventuelle
 
     const randomLoc = await getRandomValidLocation();
+    if (!randomLoc) {
+        document.getElementById("result").innerHTML = `<div style="color:red; font-weight:bold; text-align:center;">${tr('error_loading')}</div>`;
+        return;
+    }
+
     true_location = [randomLoc.lat, randomLoc.lng];
     current_name = `${randomLoc.lat.toFixed(2)}, ${randomLoc.lng.toFixed(2)}`;
 
@@ -124,7 +155,7 @@ function check() {
     trueMarker = L.marker(true_location).addTo(resultmap).bindPopup(tr('correct') + " " + current_name).openPopup();
     guessMarker = L.marker(guess_coordinates).addTo(resultmap).bindPopup(tr('yourGuess'));
 
-    const polyline = L.polyline([guess_coordinates, true_location], {color: 'blue', dashArray: '5,10'}).addTo(resultmap);
+    L.polyline([guess_coordinates, true_location], {color: 'blue', dashArray: '5,10'}).addTo(resultmap);
 
     display_location();
 }
@@ -182,20 +213,15 @@ function toggleLangMenu() {
 function setLanguage(lang) {
     if (lang === currentLang) return;
     currentLang = lang;
-    // Ferme le menu
     document.getElementById("lang-menu").style.display = "none";
-    // Met à jour les textes
     updateTexts();
-    // Réaffiche round/score/distance en bonne unité
     display_location();
-    // Met à jour le bouton langue
     document.getElementById("lang-btn").innerHTML = (lang === "fr" ? "FR" : "EN") + " ⯆";
 }
 function updateTexts() {
     document.querySelector('h1').innerText = tr('title');
     document.getElementById('check').innerText = tr('guess');
     document.getElementById('next').innerText = tr('next');
-    // Menu langues
     document.querySelectorAll('#lang-menu div')[0].innerText = translations['en'].english;
     document.querySelectorAll('#lang-menu div')[1].innerText = translations['fr'].french;
 }
