@@ -1,7 +1,7 @@
 'use strict';
 
 // Mapillary API token gratuit
-const MAPILLARY_CLIENT_TOKEN = 'MLY|YOUR_MAPILLARY_TOKEN_HERE';
+const MAPILLARY_CLIENT_TOKEN = 'MLY|30659072840403619|361263956c0aac664f5a7475a63df437';
 
 let map, resultmap, guessMarker, trueMarker, guess_coordinates = [], true_location = [];
 let accumulated_distance = 0, current_name = '', distance_from_guess = 0, check_count = 0;
