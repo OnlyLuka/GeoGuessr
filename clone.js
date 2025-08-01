@@ -169,8 +169,14 @@ function display_location() {
     document.getElementById("totaldistance").innerHTML = `${tr('roundScore')} ${accumulated_distance.toFixed(2)} ${tr(unit())}`;
 }
 
-function disableButton(id) { document.getElementById(id).disabled = true; }
-function enableButton(id) { document.getElementById(id).disabled = false; }
+function disableButton(id) {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = true;
+}
+function enableButton(id) {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = false;
+}
 function showButton(id) {
     const btn = document.getElementById(id);
     if (btn) {
