@@ -15,11 +15,6 @@ let panoViewer;
 let currentLang = 'en'; // Langue par défaut
 let MAPILLARY_IMAGES = [];
 
-// Initialisation de l'API client Mapillary 4.x (important)
-const apiClient = new Mapillary.ApiClient({
-    accessToken: MAPILLARY_CLIENT_TOKEN
-});
-
 const translations = {
     en: {
         title: "TerraSpot Project!",
@@ -113,17 +108,12 @@ async function initialize() {
         trueLocation = [randomLocation.lat, randomLocation.lng];
         currentName = `${randomLocation.lat.toFixed(2)}, ${randomLocation.lng.toFixed(2)}`;
 
-        // Suppression du viewer existant si besoin
-        if (panoViewer) {
-            panoViewer.remove();
-            panoViewer = null;
-        }
-
-        // Initialisation du viewer Mapillary 4.x (note l'apiClient)
+        // Initialisation du viewer Mapillary
+        if (panoViewer) panoViewer.remove();
         panoViewer = new Mapillary.Viewer({
             container: 'pano',
             imageId: randomLocation.imageId,
-            apiClient: apiClient,  // IMPORTANT ici
+            accessToken: MAPILLARY_CLIENT_TOKEN,
             component: { cover: false }
         });
 
