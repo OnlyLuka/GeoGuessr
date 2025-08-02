@@ -13,10 +13,10 @@
       <h1>TerraSpot Project</h1>
       <div id="round"></div>
       <div id="lang-btn-container">
-        <button id="lang-btn">EN ⯆</button>
+        <button id="lang-btn" onclick="toggleLangMenu()">EN ⯆</button>
         <div id="lang-menu" style="display:none;">
-          <div>English</div>
-          <div>Français</div>
+          <div onclick="setLanguage('en')">English</div>
+          <div onclick="setLanguage('fr')">Français</div>
         </div>
       </div>
     </header>
@@ -27,8 +27,8 @@
       </div>
       <div id="result"></div>
       <div id="buttons">
-        <button type="button" class="btn btn-primary" id="check">Guess!</button>
-        <button type="button" class="btn btn-primary" id="next" style="display:none;">Next Location</button>
+        <button type="button" class="btn btn-primary" onclick="check()" id="check">Guess!</button>
+        <button type="button" class="btn btn-primary" onclick="initialize()" id="next" style="display:none;">Next Location</button>
       </div>
       <div id="center">
         <span id="location"></span>
